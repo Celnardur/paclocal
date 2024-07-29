@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Check if a package name is provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <package_name>"
+    exit 1
+fi
+
+PACKAGE_NAME=$1
+
+# Download the package and its dependencies to a specified directory
+echo "Downloading $PACKAGE_NAME and its dependencies..."
+sudo pacman -Syw --cachedir ~/.local/cache $PACKAGE_NAME
+
+# Extract each package to ~/.local, handling 'etc' files separately
+for pkg in ~/.local/cache/*.pkg.tar.zst; do
+    echo "Processing $pkg..."
+
+    # Check if the package contains any of the common directories
+    if tar -tf $pkg | grep -Eq '^(usr/bin|usr/share|usr/lib|usr/include|usr/local)/'; then
+        echo "Extracting common directories from $pkg to ~/.local"
+        tar -xvf $pkg -C ~/.local --strip-components=1
+    fi
+
+    # Check if the package contains the 'etc' directory
+    if tar -tf $pkg | grep -Eq '^etc/'; then
+        echo "Extracting etc files from $pkg to ~/.local/etc"
+        tar -xvf $pkg -C ~/.config --strip-components=0 etc
+    fi
+
+    echo ""
+done
+
+echo "Removing cached files"
+sudo rm ~/.local/cache/*.pkg.*
+
+echo "Extraction complete."
