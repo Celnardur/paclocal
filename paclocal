@@ -25,7 +25,7 @@ for pkg in ~/.local/cache/*.pkg.tar.zst; do
     # Check if the package contains the 'etc' directory
     if tar -tf $pkg | grep -Eq '^etc/'; then
         echo "Extracting etc files from $pkg to ~/.local/etc"
-        tar -xvf $pkg -C ~/.config --strip-components=0 etc
+        tar -xvf $pkg -C ~/.local/etc --strip-components=0 etc
     fi
 
     echo ""
